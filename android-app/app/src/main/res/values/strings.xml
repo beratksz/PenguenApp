@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Digital Signage Display</string>
+    <string name="settings_title">Display Settings</string>
+    <string name="server_url_label">Server URL</string>
+    <string name="save_button">Save Settings</string>
+    <string name="close_button">Close</string>
+    <string name="connection_error">Connection Error</string>
+    <string name="content_updated">Content Updated</string>
+    <string name="service_running">Digital signage is running in background</string>
+</resources>

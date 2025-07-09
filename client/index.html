@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Tabela Yönetim Paneli</title>
+    <link rel="icon" type="image/svg+xml" href="/client/favicon.ico">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .status {
+            grid-column: 1 / -1;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .devices-list {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+
+        .device-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .device-item:last-child {
+            border-bottom: none;
+        }
+
+        .device-info h4 {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .device-info p {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .current-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #667eea;
+        }
+
+        .content-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #dee2e6;
+        }
+
+        .content-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .content-preview .text-content {
+            font-size: 1.5em;
+            color: #495057;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .file-input-display:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .file-input-display i {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        }
+
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tv"></i> Digital Tabela Yönetim Paneli</h1>
+            <p>Tüm cihazlardaki içeriği buradan yönetebilirsiniz</p>
+        </div>
+
+        <div class="content">
+            <div class="grid">
+                <!-- Text Content Card -->
+                <div class="card">
+                    <h3><i class="fas fa-font"></i> Metin Gönder</h3>
+                    <form id="textForm">
+                        <div class="form-group">
+                            <label for="textContent">Metin İçeriği:</label>
+                            <textarea 
+                                id="textContent" 
+                                class="form-control" 
+                                placeholder="Göndermek istediğiniz metni yazın..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-paper-plane"></i> Metni Gönder
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Image Upload Card -->
+                <div class="card">
+                    <h3><i class="fas fa-image"></i> Resim Gönder</h3>
+                    <form id="imageForm">
+                        <div class="form-group">
+                            <label>Resim Seç:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="imageFile" accept="image/*">
+                                <div class="file-input-display">
+                                    <div>
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Resim yüklemek için tıklayın<br><small>PNG, JPG, GIF desteklenir (Max: 10MB)</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-upload"></i> Resmi Gönder
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Status Card -->
+                <div class="card status">
+                    <h3><i class="fas fa-wifi"></i> Bağlantı Durumu</h3>
+                    <div id="connectionStatus" class="status-indicator status-disconnected">
+                        <i class="fas fa-circle"></i>
+                        <span>Bağlantı kontrol ediliyor...</span>
+                    </div>
+                    
+                    <h4 style="margin-top: 20px; margin-bottom: 15px;">
+                        <i class="fas fa-devices"></i> Bağlı Cihazlar (<span id="deviceCount">0</span>)
+                    </h4>
+                    <div id="devicesList" class="devices-list">
+                        <div class="device-item">
+                            <div class="device-info">
+                                <p style="text-align: center; color: #6c757d;">Henüz bağlı cihaz yok</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Content Display -->
+            <div class="current-content">
+                <h3 style="margin-bottom: 20px; color: #495057;">
+                    <i class="fas fa-eye"></i> Şu Anda Gösterilen İçerik
+                </h3>
+                <div id="contentPreview" class="content-preview">
+                    <div class="text-content">İçerik yükleniyor...</div>
+                </div>
+                <p style="margin-top: 15px; color: #6c757d; text-align: center;">
+                    Son güncelleme: <span id="lastUpdate">-</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/client/script.js"></script>
+</body>
+</html>

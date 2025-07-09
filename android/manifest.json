@@ -1,0 +1,42 @@
+{
+  "name": "Digital Signage Display",
+  "short_name": "DigiSign",
+  "description": "Digital signage display application for Android devices",
+  "version": "1.0.0",
+  "start_url": "./display.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "theme_color": "#667eea",
+  "background_color": "#000000",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "permissions": [
+    "WAKE_LOCK",
+    "INTERNET",
+    "ACCESS_NETWORK_STATE",
+    "ACCESS_WIFI_STATE"
+  ],
+  "features": [
+    {
+      "name": "android.hardware.screen.portrait",
+      "required": false
+    },
+    {
+      "name": "android.hardware.screen.landscape",
+      "required": false
+    }
+  ],
+  "preferFullScreen": true,
+  "keepScreenOn": true,
+  "hideSystemUI": true
+}

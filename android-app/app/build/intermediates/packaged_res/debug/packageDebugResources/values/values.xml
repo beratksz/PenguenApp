@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Digital Signage Display</string>
+    <string name="close_button">Close</string>
+    <string name="connection_error">Connection Error</string>
+    <string name="content_updated">Content Updated</string>
+    <string name="save_button">Save Settings</string>
+    <string name="server_url_label">Server URL</string>
+    <string name="service_running">Digital signage is running in background</string>
+    <string name="settings_title">Display Settings</string>
+    <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">#667eea</item>
+        <item name="android:colorPrimaryDark">#764ba2</item>
+        <item name="android:colorAccent">#667eea</item>
+    </style>
+    <style name="FullscreenTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorPrimary">#667eea</item>
+        <item name="android:colorPrimaryDark">#764ba2</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+</resources>

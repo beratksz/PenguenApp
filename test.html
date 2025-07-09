@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Signage Test</title>
+    <link rel="icon" type="image/svg+xml" href="/client/favicon.ico">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Digital Signage System Test</h1>
+    
+    <div class="test-card">
+        <h3>1. Server Connectivity Test</h3>
+        <div id="serverStatus" class="status warning">Testing...</div>
+        <button onclick="testServer()">Test Server</button>
+    </div>
+
+    <div class="test-card">
+        <h3>2. WebSocket Connection Test</h3>
+        <div id="socketStatus" class="status warning">Testing...</div>
+        <button onclick="testSocket()">Test WebSocket</button>
+    </div>
+
+    <div class="test-card">
+        <h3>3. API Endpoints Test</h3>
+        <div id="apiStatus" class="status warning">Testing...</div>
+        <button onclick="testAPI()">Test API</button>
+    </div>
+
+    <div class="test-card">
+        <h3>4. File Upload Test</h3>
+        <div id="uploadStatus" class="status warning">Ready</div>
+        <input type="file" id="testFile" accept="image/*">
+        <button onclick="testUpload()">Test Upload</button>
+    </div>
+
+    <div class="test-card">
+        <h3>5. Real-time Communication Test</h3>
+        <div id="realtimeStatus" class="status warning">Ready</div>
+        <input type="text" id="testMessage" placeholder="Test mesajı yazın...">
+        <button onclick="testRealtime()">Send Test Message</button>
+    </div>
+
+    <div class="test-card">
+        <h3>Test Links</h3>
+        <p>
+            <a href="/client" target="_blank">📱 Web Admin Panel</a><br>
+            <a href="/android/display.html" target="_blank">📺 Display App</a><br>
+            <a href="/api/content" target="_blank">🔗 API Content</a><br>
+            <a href="/api/devices" target="_blank">🔗 API Devices</a>
+        </p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = null;
+
+        async function testServer() {
+            const status = document.getElementById('serverStatus');
+            try {
+                const response = await fetch('/api/content');
+                if (response.ok) {
+                    status.className = 'status success';
+                    status.textContent = '✅ Server is running and accessible';
+                } else {
+                    status.className = 'status error';
+                    status.textContent = '❌ Server responded with error: ' + response.status;
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ Cannot connect to server: ' + error.message;
+            }
+        }
+
+        function testSocket() {
+            const status = document.getElementById('socketStatus');
+            
+            if (socket) {
+                socket.disconnect();
+            }
+
+            socket = io();
+            
+            socket.on('connect', () => {
+                status.className = 'status success';
+                status.textContent = '✅ WebSocket connected successfully';
+            });
+
+            socket.on('disconnect', () => {
+                status.className = 'status warning';
+                status.textContent = '⚠️ WebSocket disconnected';
+            });
+
+            socket.on('connect_error', () => {
+                status.className = 'status error';
+                status.textContent = '❌ WebSocket connection failed';
+            });
+        }
+
+        async function testAPI() {
+            const status = document.getElementById('apiStatus');
+            const tests = [];
+
+            // Test GET /api/content
+            try {
+                const response = await fetch('/api/content');
+                tests.push(response.ok ? '✅ GET /api/content' : '❌ GET /api/content');
+            } catch {
+                tests.push('❌ GET /api/content');
+            }
+
+            // Test GET /api/devices
+            try {
+                const response = await fetch('/api/devices');
+                tests.push(response.ok ? '✅ GET /api/devices' : '❌ GET /api/devices');
+            } catch {
+                tests.push('❌ GET /api/devices');
+            }
+
+            // Test POST /api/content/text
+            try {
+                const response = await fetch('/api/content/text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: 'Test message from API test' })
+                });
+                tests.push(response.ok ? '✅ POST /api/content/text' : '❌ POST /api/content/text');
+            } catch {
+                tests.push('❌ POST /api/content/text');
+            }
+
+            status.className = tests.every(t => t.startsWith('✅')) ? 'status success' : 'status error';
+            status.innerHTML = tests.join('<br>');
+        }
+
+        async function testUpload() {
+            const status = document.getElementById('uploadStatus');
+            const fileInput = document.getElementById('testFile');
+            
+            if (!fileInput.files[0]) {
+                status.className = 'status error';
+                status.textContent = '❌ Please select a file first';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/api/content/image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    status.className = 'status success';
+                    status.textContent = '✅ File uploaded successfully';
+                } else {
+                    const error = await response.json();
+                    status.className = 'status error';
+                    status.textContent = '❌ Upload failed: ' + error.error;
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ Upload error: ' + error.message;
+            }
+        }
+
+        async function testRealtime() {
+            const status = document.getElementById('realtimeStatus');
+            const message = document.getElementById('testMessage').value;
+
+            if (!message) {
+                status.className = 'status error';
+                status.textContent = '❌ Please enter a test message';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/content/text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: message })
+                });
+
+                if (response.ok) {
+                    status.className = 'status success';
+                    status.textContent = '✅ Message sent to all connected devices';
+                    document.getElementById('testMessage').value = '';
+                } else {
+                    status.className = 'status error';
+                    status.textContent = '❌ Failed to send message';
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ Error: ' + error.message;
+            }
+        }
+
+        // Auto-run basic tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(testServer, 500);
+            setTimeout(testSocket, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
+        <item name="android:colorPrimary">#667eea</item>
+        <item name="android:colorPrimaryDark">#764ba2</item>
+        <item name="android:colorAccent">#667eea</item>
+    </style>
+
+    <!-- Fullscreen theme for kiosk mode -->
+    <style name="FullscreenTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorPrimary">#667eea</item>
+        <item name="android:colorPrimaryDark">#764ba2</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:windowDisablePreview">true</item>
+    </style>
+</resources>

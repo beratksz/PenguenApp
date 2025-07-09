@@ -1,0 +1,51 @@
+/* Basic icon font for Digital Signage */
+@font-face {
+  font-family: 'DigitalIcons';
+  src: url('data:font/woff2;base64,') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.icon {
+  font-family: 'DigitalIcons', 'Segoe UI Symbol', 'Arial Unicode MS', sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+/* Icon mappings using Unicode symbols */
+.icon-tv::before { content: '📺'; }
+.icon-font::before { content: '🔤'; }
+.icon-image::before { content: '🖼️'; }
+.icon-wifi::before { content: '📶'; }
+.icon-devices::before { content: '📱'; }
+.icon-eye::before { content: '👁️'; }
+.icon-upload::before { content: '⬆️'; }
+.icon-send::before { content: '📤'; }
+.icon-circle::before { content: '●'; }
+.icon-cloud-upload::before { content: '☁️'; }
+.icon-check::before { content: '✅'; }
+.icon-times::before { content: '❌'; }
+.icon-warning::before { content: '⚠️'; }
+.icon-info::before { content: 'ℹ️'; }
+.icon-settings::before { content: '⚙️'; }
+.icon-power::before { content: '🔌'; }
+.icon-refresh::before { content: '🔄'; }
+
+/* Alternative text-based icons */
+.icon-alt {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+}
+
+.icon-alt.icon-tv::before { content: '[TV]'; }
+.icon-alt.icon-wifi::before { content: '[WIFI]'; }
+.icon-alt.icon-upload::before { content: '[UP]'; }
+.icon-alt.icon-check::before { content: '[OK]'; }
+.icon-alt.icon-times::before { content: '[X]'; }

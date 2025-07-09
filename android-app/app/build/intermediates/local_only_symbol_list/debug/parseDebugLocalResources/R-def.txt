@@ -1,0 +1,12 @@
+R_DEF: Internal format may change without notice
+local
+string app_name
+string close_button
+string connection_error
+string content_updated
+string save_button
+string server_url_label
+string service_running
+string settings_title
+style AppTheme
+style FullscreenTheme
