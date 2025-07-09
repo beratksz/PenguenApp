@@ -8,7 +8,13 @@
     "dev": "nodemon server/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["digital-signage", "android", "web-admin", "real-time", "websocket"],
+  "keywords": [
+    "digital-signage",
+    "android",
+    "web-admin",
+    "real-time",
+    "websocket"
+  ],
   "author": "Digital Signage Team",
   "license": "MIT",
   "dependencies": {
@@ -18,8 +24,11 @@
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "moment": "^2.30.1",
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
+    "node-cron": "^4.2.0",
+    "node-schedule": "^2.1.1",
     "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
     "uuid": "^11.1.0"

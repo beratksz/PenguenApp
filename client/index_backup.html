@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Tabela Yönetim Paneli - Gelişmiş</title>
+    <link rel="icon" type="image/svg+xml" href="/client/favicon.ico">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .live-stats {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 0 0 auto;
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .nav-tab i {
+            margin-right: 8px;
+        }
+
+        .nav-tab .badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 i {
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #212529;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .device-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .device-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .device-online {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .device-offline {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .device-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .device-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .device-status.online {
+            background: #28a745;
+            color: white;
+        }
+
+        .device-status.offline {
+            background: #dc3545;
+            color: white;
+        }
+
+        .device-info {
+            font-size: 14px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .scheduled-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .scheduled-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .scheduled-item.pending {
+            border-left-color: #ffc107;
+        }
+
+        .scheduled-item.sent {
+            border-left-color: #28a745;
+            opacity: 0.7;
+        }
+
+        .scheduled-item.cancelled {
+            border-left-color: #dc3545;
+            opacity: 0.5;
+        }
+
+        .scheduled-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .scheduled-title {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .scheduled-time {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .scheduled-content {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .scheduled-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .statistics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .stat-card i {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-left: 4px solid #667eea;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: #28a745;
+        }
+
+        .notification.error {
+            border-left-color: #dc3545;
+        }
+
+        .notification.warning {
+            border-left-color: #ffc107;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .file-input-display {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .file-input-display:hover {
+            border-color: #667eea;
+            background: #e9ecef;
+        }
+
+        .file-input-display i {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        #imageFile {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-progress {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .settings-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .settings-section h4 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .content-preview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content-preview .text-content {
+            font-size: 1.5em;
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .content-preview .image-content {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+        }
+
+        .emergency-banner {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 15px 30px;
+            text-align: center;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .template-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .template-name {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .template-content {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .live-stats {
+                position: static;
+                margin-top: 20px;
+                justify-content: center;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .nav-tab {
+                text-align: center;
+                border-bottom: none;
+                border-right: 3px solid transparent;
+            }
+
+            .nav-tab.active {
+                border-right-color: #667eea;
+                border-bottom-color: transparent;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .devices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tv"></i> Digital Tabela Yönetim Paneli</h1>
+            <p>Gelişmiş içerik yönetimi ve zamanlama sistemi</p>
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .status {
+            grid-column: 1 / -1;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .devices-list {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+
+        .device-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .device-item:last-child {
+            border-bottom: none;
+        }
+
+        .device-info h4 {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .device-info p {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .current-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #667eea;
+        }
+
+        .content-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #dee2e6;
+        }
+
+        .content-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .content-preview .text-content {
+            font-size: 1.5em;
+            color: #495057;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .file-input-display:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .file-input-display i {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        }
+
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tv"></i> Digital Tabela Yönetim Paneli</h1>
+            <p>Gelişmiş içerik yönetimi ve zamanlama sistemi</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('content')">
+                <i class="fas fa-edit"></i> İçerik Yönetimi
+            </button>
+            <button class="nav-tab" onclick="showTab('scheduled')">
+                <i class="fas fa-clock"></i> Zamanlanmış İçerik
+            </button>
+            <button class="nav-tab" onclick="showTab('devices')">
+                <i class="fas fa-mobile-alt"></i> Cihazlar
+            </button>
+            <button class="nav-tab" onclick="showTab('settings')">
+                <i class="fas fa-cog"></i> Ayarlar
+            </button>
+            <button class="nav-tab" onclick="showTab('statistics')">
+                <i class="fas fa-chart-bar"></i> İstatistikler
+            </button>
+        </div>
+
+        <!-- Content Tab -->
+        <div class="tab-content active" id="content-tab">
+            <div class="grid">
+                <!-- Text Content Card -->
+                <div class="card">
+                    <h3><i class="fas fa-font"></i> Metin Gönder</h3>
+                    <form id="textForm">
+                        <div class="form-group">
+                            <label for="textContent">Metin İçeriği:</label>
+    <div class="container">
+        <div class="header">
+            <div class="live-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="liveDeviceCount">0</div>
+                    <div>Aktif Cihaz</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="liveUptime">0h</div>
+                    <div>Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="livePendingJobs">0</div>
+                    <div>Bekleyen İş</div>
+                </div>
+            </div>
+            <h1><i class="fas fa-tv"></i> Digital Tabela Yönetim Paneli</h1>
+            <p>Gelişmiş İçerik Yönetimi ve Zamanlanmış Gönderim Sistemi</p>
+        </div>
+
+        <div id="emergencyBanner" class="emergency-banner" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <span id="emergencyMessage">Acil durum içeriği aktif!</span>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="content">
+                <i class="fas fa-edit"></i> İçerik Yönetimi
+            </button>
+            <button class="nav-tab" data-tab="scheduled">
+                <i class="fas fa-calendar-alt"></i> Zamanlanmış İçerik
+                <span class="badge" id="scheduledBadge" style="display: none;">0</span>
+            </button>
+            <button class="nav-tab" data-tab="templates">
+                <i class="fas fa-layer-group"></i> Şablonlar
+            </button>
+            <button class="nav-tab" data-tab="devices">
+                <i class="fas fa-tv"></i> Cihazlar
+            </button>
+            <button class="nav-tab" data-tab="settings">
+                <i class="fas fa-cog"></i> Ayarlar
+            </button>
+            <button class="nav-tab" data-tab="statistics">
+                <i class="fas fa-chart-bar"></i> İstatistikler
+            </button>
+            <button class="nav-tab" data-tab="emergency">
+                <i class="fas fa-exclamation-triangle"></i> Acil Durum
+            </button>
+        </div>
+
+        <!-- İçerik Yönetimi Tab -->
+        <div class="tab-content active" id="content">
+            <div class="quick-actions">
+                <button class="btn" onclick="app.showQuickText()">
+                    <i class="fas fa-bolt"></i> Hızlı Metin
+                </button>
+                <button class="btn btn-warning" onclick="app.scheduleNow()">
+                    <i class="fas fa-clock"></i> Şimdi Zamanla
+                </button>
+                <button class="btn btn-success" onclick="app.loadCurrentContent()">
+                    <i class="fas fa-refresh"></i> Yenile
+                </button>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3><i class="fas fa-font"></i> Metin Gönder</h3>
+                    <form id="textForm">
+                        <div class="form-group">
+                            <label for="textContent">Metin İçeriği:</label>
+                            <textarea 
+                                id="textContent" 
+                                class="form-control" 
+                                placeholder="Göndermek istediğiniz metni yazın..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-paper-plane"></i> Metni Gönder
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-image"></i> Resim Gönder</h3>
+                    <form id="imageForm">
+                        <div class="form-group">
+                            <label>Resim Seç:</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="imageFile" accept="image/*">
+                                <div class="file-input-display">
+                                    <div>
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Resim yüklemek için tıklayın<br><small>PNG, JPG, GIF desteklenir (Max: 10MB)</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-upload"></i> Resmi Gönder
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-eye"></i> Şu Anda Gösterilen İçerik</h3>
+                <div id="contentPreview" class="content-preview">
+                    <div class="text-content">İçerik yükleniyor...</div>
+                </div>
+                <p style="margin-top: 15px; color: #6c757d; text-align: center;">
+                    Son güncelleme: <span id="lastUpdate">-</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Zamanlanmış İçerik Tab -->
+        <div class="tab-content" id="scheduled">
+            <div class="quick-actions">
+                <button class="btn" onclick="app.showScheduleModal()">
+                    <i class="fas fa-plus"></i> Yeni Zamanlanmış İçerik
+                </button>
+                <button class="btn btn-warning" onclick="app.showAdvancedScheduleModal()">
+                    <i class="fas fa-calendar-week"></i> Gelişmiş Zamanlama
+                </button>
+                <button class="btn btn-secondary" onclick="app.loadScheduledContent()">
+                    <i class="fas fa-refresh"></i> Yenile
+                </button>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3><i class="fas fa-clock"></i> Hızlı Zamanlama</h3>
+                    <form id="quickScheduleForm">
+                        <div class="form-group">
+                            <label for="scheduleContent">İçerik:</label>
+                            <textarea 
+                                id="scheduleContent" 
+                                class="form-control" 
+                                placeholder="Zamanlanacak içeriği yazın..."
+                                rows="3"
+                            ></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="scheduleDate">Tarih:</label>
+                                <input type="date" id="scheduleDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="scheduleTime">Saat:</label>
+                                <input type="time" id="scheduleTime" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleRepeat">Tekrar:</label>
+                            <select id="scheduleRepeat" class="form-control">
+                                <option value="once">Bir kez</option>
+                                <option value="daily">Günlük</option>
+                                <option value="weekly">Haftalık</option>
+                                <option value="monthly">Aylık</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-calendar-plus"></i> Zamanla
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-list"></i> Yaklaşan Zamanlanmış İçerikler</h3>
+                    <div id="upcomingScheduled">
+                        <p style="text-align: center; color: #6c757d;">Yaklaşan zamanlanmış içerik yok</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-history"></i> Tüm Zamanlanmış İçerikler</h3>
+                <div id="scheduledList">
+                    <p style="text-align: center; color: #6c757d;">Henüz zamanlanmış içerik yok</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Şablonlar Tab -->
+        <div class="tab-content" id="templates">
+            <div class="quick-actions">
+                <button class="btn" onclick="app.showTemplateModal()">
+                    <i class="fas fa-plus"></i> Yeni Şablon
+                </button>
+                <button class="btn btn-secondary" onclick="app.loadTemplates()">
+                    <i class="fas fa-refresh"></i> Yenile
+                </button>
+            </div>
+
+            <div class="grid grid-3">
+                <div id="templatesList">
+                    <!-- Templates will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Cihazlar Tab -->
+        <div class="tab-content" id="devices">
+            <div class="quick-actions">
+                <button class="btn" onclick="app.refreshDevices()">
+                    <i class="fas fa-refresh"></i> Cihazları Yenile
+                </button>
+                <button class="btn btn-warning" onclick="app.broadcastHealthCheck()">
+                    <i class="fas fa-heartbeat"></i> Sağlık Kontrolü
+                </button>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-wifi"></i> Bağlantı Durumu</h3>
+                <div id="connectionStatus" class="status-indicator status-disconnected">
+                    <i class="fas fa-circle"></i>
+                    <span>Bağlantı kontrol ediliyor...</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-devices"></i> Bağlı Cihazlar (<span id="deviceCount">0</span>)</h3>
+                <div id="devicesList" class="devices-grid">
+                    <div style="text-align: center; color: #6c757d; grid-column: 1/-1; padding: 40px;">
+                        Henüz bağlı cihaz yok
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ayarlar Tab -->
+        <div class="tab-content" id="settings">
+            <div class="quick-actions">
+                <button class="btn btn-success" onclick="app.saveSettings()">
+                    <i class="fas fa-save"></i> Ayarları Kaydet
+                </button>
+                <button class="btn btn-secondary" onclick="app.loadSettings()">
+                    <i class="fas fa-refresh"></i> Yenile
+                </button>
+                <button class="btn btn-warning" onclick="app.resetSettings()">
+                    <i class="fas fa-undo"></i> Varsayılana Sıfırla
+                </button>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="settings-section">
+                    <h4><i class="fas fa-display"></i> Görüntü Ayarları</h4>
+                    <div class="form-group">
+                        <label for="brightness">Parlaklık: <span class="range-value" id="brightnessValue">100%</span></label>
+                        <input type="range" id="brightness" class="range-slider" min="0" max="100" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="orientation">Ekran Yönü:</label>
+                        <select id="orientation" class="form-control">
+                            <option value="landscape">Yatay</option>
+                            <option value="portrait">Dikey</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="refreshInterval">Yenileme Aralığı (saniye):</label>
+                        <input type="number" id="refreshInterval" class="form-control" min="10" max="300" value="30">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4><i class="fas fa-volume-up"></i> Ses Ayarları</h4>
+                    <div class="form-group">
+                        <label for="volume">Ses Seviyesi: <span class="range-value" id="volumeValue">50%</span></label>
+                        <input type="range" id="volume" class="range-slider" min="0" max="100" value="50">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4><i class="fas fa-cog"></i> Sistem Ayarları</h4>
+                    <div class="form-group">
+                        <label for="displayName">Tabela Adı:</label>
+                        <input type="text" id="displayName" class="form-control" value="Ana Tabela">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Konum:</label>
+                        <input type="text" id="location" class="form-control" value="Giriş Katı">
+                    </div>
+                    <div class="form-group">
+                        <label for="timezone">Zaman Dilimi:</label>
+                        <select id="timezone" class="form-control">
+                            <option value="Europe/Istanbul">Türkiye (GMT+3)</option>
+                            <option value="UTC">UTC (GMT+0)</option>
+                            <option value="Europe/London">Londra (GMT+1)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4><i class="fas fa-toggle-on"></i> Gelişmiş Ayarlar</h4>
+                    <div class="form-group">
+                        <label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="powerSaveMode">
+                                <span class="slider"></span>
+                            </div>
+                            Güç Tasarrufu Modu
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="autoUpdate" checked>
+                                <span class="slider"></span>
+                            </div>
+                            Otomatik Güncellemeler
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- İstatistikler Tab -->
+        <div class="tab-content" id="statistics">
+            <div class="quick-actions">
+                <button class="btn btn-secondary" onclick="app.loadStatistics()">
+                    <i class="fas fa-refresh"></i> İstatistikleri Yenile
+                </button>
+                <button class="btn btn-warning" onclick="app.exportStats()">
+                    <i class="fas fa-download"></i> Dışa Aktar
+                </button>
+            </div>
+
+            <div class="statistics-grid">
+                <div class="stat-card">
+                    <i class="fas fa-share"></i>
+                    <div class="stat-number" id="statTotalUpdates">0</div>
+                    <div class="stat-label">Toplam İçerik Güncellemesi</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-number" id="statTotalConnections">0</div>
+                    <div class="stat-label">Toplam Bağlantı</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <div class="stat-number" id="statUptime">0h</div>
+                    <div class="stat-label">Sistem Çalışma Süresi</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-calendar"></i>
+                    <div class="stat-number" id="statScheduledContent">0</div>
+                    <div class="stat-label">Zamanlanmış İçerik</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-image"></i>
+                    <div class="stat-number" id="statImagesUploaded">0</div>
+                    <div class="stat-label">Yüklenen Resim</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tv"></i>
+                    <div class="stat-number" id="statActiveDevices">0</div>
+                    <div class="stat-label">Aktif Cihaz</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-history"></i> Son İçerik Geçmişi</h3>
+                <div id="contentHistory">
+                    <p style="text-align: center; color: #6c757d;">İçerik geçmişi yükleniyor...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acil Durum Tab -->
+        <div class="tab-content" id="emergency">
+            <div class="card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Acil Durum İçeriği</h3>
+                <p style="margin-bottom: 20px; color: #6c757d;">
+                    Acil durum içeriği, tüm normal içeriklerin önüne geçer ve anında tüm cihazlara gönderilir.
+                </p>
+                
+                <form id="emergencyForm">
+                    <div class="form-group">
+                        <label for="emergencyContent">Acil Durum Mesajı:</label>
+                        <textarea 
+                            id="emergencyContent" 
+                            class="form-control" 
+                            placeholder="Acil durum mesajını yazın..."
+                            rows="4"
+                        ></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emergencyType">İçerik Türü:</label>
+                            <select id="emergencyType" class="form-control">
+                                <option value="text">Metin</option>
+                                <option value="image">Resim</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="emergencyPriority">Öncelik:</label>
+                            <select id="emergencyPriority" class="form-control">
+                                <option value="critical">Kritik</option>
+                                <option value="high">Yüksek</option>
+                                <option value="medium">Orta</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-bolt"></i> Acil Durum İçeriği Gönder
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="app.clearEmergency()">
+                            <i class="fas fa-times"></i> Acil Durumu Temizle
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card" id="activeEmergencyCard" style="display: none;">
+                <h3><i class="fas fa-warning"></i> Aktif Acil Durum</h3>
+                <div id="activeEmergencyContent" style="background: #f8d7da; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <!-- Active emergency content will be shown here -->
+                </div>
+                <button class="btn btn-danger" onclick="app.clearEmergency()">
+                    <i class="fas fa-times"></i> Acil Durumu Sonlandır
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Modals would go here if needed -->
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/client/script.js"></script>
+</body>
+</html>

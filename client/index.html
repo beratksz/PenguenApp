@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Tabela Yönetim Paneli</title>
+    <title>Digital Tabela Yönetim Paneli - Gelişmiş</title>
     <link rel="icon" type="image/svg+xml" href="/client/favicon.ico">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -17,12 +17,13 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #333;
+            padding: 0 15px;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 1400px;
+            margin: 20px auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.15);
@@ -34,6 +35,7 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -47,37 +49,122 @@
             font-size: 1.1em;
         }
 
-        .content {
-            padding: 40px;
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .connection-status.connected {
+            background: rgba(40, 167, 69, 0.9);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(220, 53, 69, 0.9);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px auto;
+                width: 95%;
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .container {
+                max-width: 1600px;
+            }
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 0 0 auto;
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .nav-tab i {
+            margin-right: 8px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .grid {
             display: grid;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .grid-2 {
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 40px;
+        }
+
+        .grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
         }
 
         .card {
-            background: #f8f9fa;
+            background: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             border: 1px solid #e9ecef;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
 
         .card h3 {
             color: #495057;
             margin-bottom: 20px;
-            font-size: 1.4em;
+            font-size: 1.3em;
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .card h3 i {
+            color: #667eea;
         }
 
         .form-group {
@@ -87,17 +174,18 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #495057;
             font-weight: 500;
+            color: #495057;
         }
 
         .form-control {
             width: 100%;
-            padding: 12px 15px;
+            padding: 12px 16px;
             border: 2px solid #e9ecef;
-            border-radius: 10px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fff;
         }
 
         .form-control:focus {
@@ -106,217 +194,155 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        textarea.form-control {
-            resize: vertical;
-            min-height: 120px;
-        }
-
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-size: 1em;
+            padding: 12px 24px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            text-decoration: none;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         }
 
-        .btn-danger:hover {
-            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #212529;
         }
 
-        .status {
-            grid-column: 1 / -1;
-        }
-
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 15px;
-            border-radius: 25px;
-            font-weight: 500;
-            margin-bottom: 20px;
-        }
-
-        .status-connected {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-disconnected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .devices-list {
-            background: white;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-            overflow: hidden;
-        }
-
-        .device-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .device-item:last-child {
-            border-bottom: none;
-        }
-
-        .device-info h4 {
-            color: #495057;
-            margin-bottom: 5px;
-        }
-
-        .device-info p {
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-
-        .current-content {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            border: 2px solid #667eea;
-        }
-
-        .content-preview {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed #dee2e6;
-        }
-
-        .content-preview img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .content-preview .text-content {
-            font-size: 1.5em;
-            color: #495057;
-            font-weight: 300;
-            line-height: 1.6;
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         }
 
         .file-input-wrapper {
             position: relative;
-            display: inline-block;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
+            margin-bottom: 15px;
         }
 
         .file-input-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
             padding: 40px 20px;
-            border: 2px dashed #667eea;
-            border-radius: 10px;
-            background: #f8f9fa;
-            transition: all 0.3s ease;
             text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
             color: #667eea;
+            background: #f8f9fa;
         }
 
         .file-input-display:hover {
-            background: #667eea;
-            color: white;
+            border-color: #667eea;
+            background: #e9ecef;
         }
 
         .file-input-display i {
-            font-size: 2em;
-            margin-bottom: 10px;
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        #imageFile {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .content-preview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            color: white;
-            font-weight: 500;
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-left: 4px solid #667eea;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
             z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
+            max-width: 400px;
         }
 
         .notification.show {
+            opacity: 1;
             transform: translateX(0);
         }
 
         .notification.success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-left-color: #28a745;
         }
 
         .notification.error {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            border-left-color: #dc3545;
         }
 
-        .upload-progress {
-            width: 100%;
-            height: 4px;
-            background: #e9ecef;
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .upload-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s ease;
+        .no-data {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+            font-style: italic;
         }
 
         @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
             .container {
                 margin: 10px;
+                border-radius: 10px;
             }
-            
-            .content {
+
+            .header {
                 padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .connection-status {
+                position: static;
+                margin-top: 20px;
+                display: inline-block;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -325,23 +351,47 @@
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-tv"></i> Digital Tabela Yönetim Paneli</h1>
-            <p>Tüm cihazlardaki içeriği buradan yönetebilirsiniz</p>
+            <p>Gelişmiş içerik yönetimi ve zamanlama sistemi</p>
+            <div id="connectionStatus" class="connection-status">
+                <i class="fas fa-circle"></i> Bağlanıyor...
+            </div>
         </div>
 
-        <div class="content">
-            <div class="grid">
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="content">
+                <i class="fas fa-edit"></i> İçerik Yönetimi
+            </button>
+            <button class="nav-tab" data-tab="devices">
+                <i class="fas fa-mobile-alt"></i> Cihazlar
+            </button>
+            <button class="nav-tab" data-tab="scheduled">
+                <i class="fas fa-clock"></i> Zamanlanmış İçerik
+            </button>
+            <button class="nav-tab" data-tab="templates">
+                <i class="fas fa-layer-group"></i> Şablonlar
+            </button>
+            <button class="nav-tab" data-tab="emergency">
+                <i class="fas fa-exclamation-triangle"></i> Acil Durum
+            </button>
+            <button class="nav-tab" data-tab="statistics">
+                <i class="fas fa-chart-bar"></i> İstatistikler
+            </button>
+            <button class="nav-tab" data-tab="settings">
+                <i class="fas fa-cogs"></i> Ayarlar
+            </button>
+        </div>
+
+        <!-- Content Management Tab -->
+        <div id="content" class="tab-content active">
+            <div class="grid grid-2">
                 <!-- Text Content Card -->
                 <div class="card">
-                    <h3><i class="fas fa-font"></i> Metin Gönder</h3>
+                    <h3><i class="fas fa-font"></i> Metin İçeriği Gönder</h3>
                     <form id="textForm">
                         <div class="form-group">
                             <label for="textContent">Metin İçeriği:</label>
-                            <textarea 
-                                id="textContent" 
-                                class="form-control" 
-                                placeholder="Göndermek istediğiniz metni yazın..."
-                                rows="4"
-                            ></textarea>
+                            <textarea id="textContent" class="form-control" placeholder="Tabela üzerinde gösterilecek metni buraya yazın..." rows="4" required></textarea>
                         </div>
                         <button type="submit" class="btn">
                             <i class="fas fa-paper-plane"></i> Metni Gönder
@@ -349,63 +399,161 @@
                     </form>
                 </div>
 
-                <!-- Image Upload Card -->
+                <!-- Image Content Card -->
                 <div class="card">
-                    <h3><i class="fas fa-image"></i> Resim Gönder</h3>
+                    <h3><i class="fas fa-image"></i> Resim İçeriği Gönder</h3>
                     <form id="imageForm">
-                        <div class="form-group">
-                            <label>Resim Seç:</label>
-                            <div class="file-input-wrapper">
-                                <input type="file" id="imageFile" accept="image/*">
-                                <div class="file-input-display">
-                                    <div>
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <p>Resim yüklemek için tıklayın<br><small>PNG, JPG, GIF desteklenir (Max: 10MB)</small></p>
-                                    </div>
-                                </div>
+                        <div class="file-input-wrapper">
+                            <div class="file-input-display">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Resim yüklemek için tıklayın<br><small>PNG, JPG, GIF desteklenir (Max: 10MB)</small></p>
                             </div>
-                            <div class="upload-progress">
-                                <div class="upload-progress-bar"></div>
-                            </div>
+                            <input type="file" id="imageFile" accept="image/*" required>
                         </div>
                         <button type="submit" class="btn">
                             <i class="fas fa-upload"></i> Resmi Gönder
                         </button>
                     </form>
                 </div>
-
-                <!-- Status Card -->
-                <div class="card status">
-                    <h3><i class="fas fa-wifi"></i> Bağlantı Durumu</h3>
-                    <div id="connectionStatus" class="status-indicator status-disconnected">
-                        <i class="fas fa-circle"></i>
-                        <span>Bağlantı kontrol ediliyor...</span>
-                    </div>
-                    
-                    <h4 style="margin-top: 20px; margin-bottom: 15px;">
-                        <i class="fas fa-devices"></i> Bağlı Cihazlar (<span id="deviceCount">0</span>)
-                    </h4>
-                    <div id="devicesList" class="devices-list">
-                        <div class="device-item">
-                            <div class="device-info">
-                                <p style="text-align: center; color: #6c757d;">Henüz bağlı cihaz yok</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Current Content Display -->
-            <div class="current-content">
-                <h3 style="margin-bottom: 20px; color: #495057;">
-                    <i class="fas fa-eye"></i> Şu Anda Gösterilen İçerik
-                </h3>
+            <!-- Current Content Preview -->
+            <div class="card">
+                <h3><i class="fas fa-eye"></i> Mevcut İçerik</h3>
                 <div id="contentPreview" class="content-preview">
-                    <div class="text-content">İçerik yükleniyor...</div>
+                    <div class="no-data">İçerik yükleniyor...</div>
                 </div>
-                <p style="margin-top: 15px; color: #6c757d; text-align: center;">
-                    Son güncelleme: <span id="lastUpdate">-</span>
+                <p style="text-align: center; margin-top: 15px; color: #6c757d;">
+                    Son Güncelleme: <span id="lastUpdate">-</span>
                 </p>
+            </div>
+        </div>
+
+        <!-- Devices Tab -->
+        <div id="devices" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-mobile-alt"></i> Bağlı Cihazlar (<span id="deviceCount">0</span>)</h3>
+                <div id="devicesList">
+                    <div class="no-data">Cihazlar yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduled Content Tab -->
+        <div id="scheduled" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-plus"></i> Hızlı Zamanlama</h3>
+                <form id="quickScheduleForm">
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label for="scheduleContent">İçerik:</label>
+                            <input type="text" id="scheduleContent" class="form-control" placeholder="Zamanlanacak metin..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleDate">Tarih:</label>
+                            <input type="date" id="scheduleDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleTime">Saat:</label>
+                            <input type="time" id="scheduleTime" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleDuration">Süre (dakika):</label>
+                            <input type="number" id="scheduleDuration" class="form-control" value="30" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleRepeat">Tekrar:</label>
+                            <select id="scheduleRepeat" class="form-control">
+                                <option value="once">Bir kere</option>
+                                <option value="daily">Her gün</option>
+                                <option value="weekly">Her hafta</option>
+                                <option value="monthly">Her ay</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">
+                        <i class="fas fa-clock"></i> Zamanla
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-list"></i> Zamanlanmış İçerikler</h3>
+                <div id="scheduledList">
+                    <div class="no-data">Zamanlanmış içerik yok</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="templates" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-layer-group"></i> İçerik Şablonları</h3>
+                <div id="templatesList">
+                    <div class="no-data">Şablonlar yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Tab -->
+        <div id="emergency" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Acil Durum Mesajı</h3>
+                <form id="emergencyForm">
+                    <div class="form-group">
+                        <label for="emergencyText">Acil Durum Mesajı:</label>
+                        <textarea id="emergencyText" class="form-control" placeholder="Acil durum mesajını buraya yazın..." rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="emergencyPriority">Öncelik:</label>
+                        <select id="emergencyPriority" class="form-control">
+                            <option value="high">Yüksek</option>
+                            <option value="critical">Kritik</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-broadcast-tower"></i> Acil Mesaj Gönder
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Statistics Tab -->
+        <div id="statistics" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> Sistem İstatistikleri</h3>
+                <div id="statisticsContent">
+                    <div class="no-data">İstatistikler yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <h3><i class="fas fa-cogs"></i> Cihaz Ayarları</h3>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="brightness">Parlaklık: <span id="brightnessValue">100%</span></label>
+                        <input type="range" id="brightness" class="form-control" min="0" max="100" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="volume">Ses: <span id="volumeValue">50%</span></label>
+                        <input type="range" id="volume" class="form-control" min="0" max="100" value="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="displayTimeout">Ekran Zaman Aşımı (dakika):</label>
+                        <input type="number" id="displayTimeout" class="form-control" value="30" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoRefresh"> Otomatik Yenileme
+                        </label>
+                    </div>
+                </div>
+                <button onclick="admin.saveSettings()" class="btn">
+                    <i class="fas fa-save"></i> Ayarları Kaydet
+                </button>
             </div>
         </div>
     </div>
@@ -413,7 +561,10 @@
     <!-- Notification -->
     <div id="notification" class="notification"></div>
 
+    <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/client/script.js"></script>
+    
+    <!-- Main JavaScript -->
+    <script src="/client/script_new.js"></script>
 </body>
 </html>

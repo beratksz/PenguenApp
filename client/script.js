@@ -2,14 +2,20 @@ class DigitalSignageAdmin {
     constructor() {
         this.socket = null;
         this.isConnected = false;
+        this.currentTab = 'content';
+        this.devices = new Map();
+        this.scheduledContent = [];
+        this.templates = [];
+        this.statistics = {};
+        this.settings = {};
         this.init();
     }
 
     init() {
         this.connectSocket();
         this.bindEvents();
-        this.loadCurrentContent();
-        this.loadDevices();
+        this.loadInitialData();
+        this.setupAutoRefresh();
     }
 
     connectSocket() {
@@ -19,16 +25,47 @@ class DigitalSignageAdmin {
             this.isConnected = true;
             this.updateConnectionStatus(true);
             this.showNotification('Sunucuya bağlandı', 'success');
+            console.log('🔗 Sunucuya bağlandı');
         });
 
         this.socket.on('disconnect', () => {
             this.isConnected = false;
             this.updateConnectionStatus(false);
             this.showNotification('Sunucu bağlantısı kesildi', 'error');
+            console.log('🔌 Sunucu bağlantısı kesildi');
         });
 
         this.socket.on('content-update', (content) => {
             this.updateContentPreview(content);
+            this.showNotification('İçerik güncellendi', 'success');
+        });
+
+        this.socket.on('settings-update', (settings) => {
+            this.settings = settings;
+            this.updateSettingsUI();
+            this.showNotification('Ayarlar güncellendi', 'success');
+        });
+
+        this.socket.on('emergency-content', (emergency) => {
+            this.showEmergencyBanner(emergency);
+            this.showNotification('Acil durum içeriği alındı!', 'warning');
+        });
+
+        this.socket.on('emergency-clear', () => {
+            this.hideEmergencyBanner();
+            this.showNotification('Acil durum temizlendi', 'success');
+        });
+
+        this.socket.on('health-check', (data) => {
+            console.log('💓 Sağlık kontrolü alındı:', data);
+        });
+
+        this.socket.on('bulk-content', (bulkContent) => {
+            this.showNotification(`Toplu içerik alındı: ${bulkContent.contents.length} öğe`, 'success');
+        });
+
+        this.socket.on('device-control', (data) => {
+            console.log('🎛️ Cihaz kontrolü:', data);
         });
 
         this.socket.on('connect_error', () => {
@@ -38,21 +75,47 @@ class DigitalSignageAdmin {
     }
 
     bindEvents() {
-        // Text form submission
+        // Tab switching
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                this.switchTab(tabId);
+            });
+        });
+
+        // Form submissions
         document.getElementById('textForm').addEventListener('submit', (e) => {
             e.preventDefault();
             this.sendTextContent();
         });
 
-        // Image form submission
         document.getElementById('imageForm').addEventListener('submit', (e) => {
             e.preventDefault();
             this.sendImageContent();
         });
 
-        // File input change
+        document.getElementById('quickScheduleForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.scheduleContent();
+        });
+
+        document.getElementById('emergencyForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.sendEmergencyContent();
+        });
+
+        // File input
         document.getElementById('imageFile').addEventListener('change', (e) => {
             this.handleFileSelect(e);
+        });
+
+        // Settings
+        document.getElementById('brightness').addEventListener('input', (e) => {
+            document.getElementById('brightnessValue').textContent = e.target.value + '%';
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            document.getElementById('volumeValue').textContent = e.target.value + '%';
         });
 
         // File drop zone
@@ -80,6 +143,78 @@ class DigitalSignageAdmin {
                 this.handleFileSelect({ target: { files } });
             }
         });
+
+        // Auto-set current date/time for scheduling
+        const now = new Date();
+        document.getElementById('scheduleDate').value = now.toISOString().split('T')[0];
+        document.getElementById('scheduleTime').value = now.toTimeString().slice(0, 5);
+    }
+
+    async loadInitialData() {
+        await Promise.all([
+            this.loadCurrentContent(),
+            this.loadDevices(),
+            this.loadScheduledContent(),
+            this.loadTemplates(),
+            this.loadSettings(),
+            this.loadStatistics()
+        ]);
+    }
+
+    setupAutoRefresh() {
+        // Refresh live stats every 10 seconds
+        setInterval(() => {
+            this.updateLiveStats();
+        }, 10000);
+
+        // Refresh devices every 30 seconds
+        setInterval(() => {
+            if (this.currentTab === 'devices') {
+                this.loadDevices();
+            }
+        }, 30000);
+
+        // Refresh scheduled content every minute
+        setInterval(() => {
+            if (this.currentTab === 'scheduled') {
+                this.loadScheduledContent();
+            }
+        }, 60000);
+    }
+
+    switchTab(tabId) {
+        // Update active tab
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+
+        // Update active content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(tabId).classList.add('active');
+
+        this.currentTab = tabId;
+
+        // Load data for active tab
+        switch (tabId) {
+            case 'devices':
+                this.loadDevices();
+                break;
+            case 'scheduled':
+                this.loadScheduledContent();
+                break;
+            case 'templates':
+                this.loadTemplates();
+                break;
+            case 'statistics':
+                this.loadStatistics();
+                break;
+            case 'settings':
+                this.loadSettings();
+                break;
+        }
     }
 
     async sendTextContent() {
@@ -222,96 +357,501 @@ class DigitalSignageAdmin {
         }
     }
 
-    updateContentPreview(content) {
-        const preview = document.getElementById('contentPreview');
-        const lastUpdate = document.getElementById('lastUpdate');
-        
-        if (content.type === 'text') {
-            preview.innerHTML = `<div class="text-content">${this.escapeHtml(content.content)}</div>`;
-        } else if (content.type === 'image') {
-            preview.innerHTML = `<img src="${content.content}" alt="Current Content">`;
+    async loadScheduledContent() {
+        try {
+            const response = await fetch('/api/scheduled');
+            const scheduled = await response.json();
+            this.scheduledContent = scheduled;
+            this.updateScheduledContentUI();
+        } catch (error) {
+            console.error('Zamanlanmış içerik yüklenemedi:', error);
         }
-
-        lastUpdate.textContent = new Date(content.timestamp).toLocaleString('tr-TR');
     }
 
-    updateDevicesList(devices) {
-        const devicesList = document.getElementById('devicesList');
-        const deviceCount = document.getElementById('deviceCount');
-        
-        deviceCount.textContent = devices.length;
+    async loadTemplates() {
+        try {
+            const response = await fetch('/api/templates');
+            const templates = await response.json();
+            this.templates = templates;
+            this.updateTemplatesUI();
+        } catch (error) {
+            console.error('Şablonlar yüklenemedi:', error);
+        }
+    }
 
-        if (devices.length === 0) {
-            devicesList.innerHTML = `
-                <div class="device-item">
-                    <div class="device-info">
-                        <p style="text-align: center; color: #6c757d;">Henüz bağlı cihaz yok</p>
-                    </div>
-                </div>
-            `;
+    async loadSettings() {
+        try {
+            const response = await fetch('/api/settings');
+            const settings = await response.json();
+            this.settings = settings;
+            this.updateSettingsUI();
+        } catch (error) {
+            console.error('Ayarlar yüklenemedi:', error);
+        }
+    }
+
+    async loadStatistics() {
+        try {
+            const response = await fetch('/api/statistics');
+            const statistics = await response.json();
+            this.statistics = statistics;
+            this.updateStatisticsUI();
+        } catch (error) {
+            console.error('İstatistikler yüklenemedi:', error);
+        }
+    }
+
+    async scheduleContent() {
+        const contentType = document.getElementById('scheduleType').value;
+        const content = document.getElementById('scheduleContent').value.trim();
+        const date = document.getElementById('scheduleDate').value;
+        const time = document.getElementById('scheduleTime').value;
+        const duration = document.getElementById('scheduleDuration').value;
+
+        if (!content || !date || !time) {
+            this.showNotification('Lütfen tüm alanları doldurun', 'error');
             return;
         }
 
-        devicesList.innerHTML = devices.map(device => `
-            <div class="device-item">
-                <div class="device-info">
-                    <h4>${device.name || 'Bilinmeyen Cihaz'}</h4>
-                    <p>Model: ${device.model || 'Bilinmiyor'} | Son görülme: ${new Date(device.lastSeen).toLocaleString('tr-TR')}</p>
+        try {
+            const response = await fetch('/api/scheduled', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: contentType,
+                    content: content,
+                    scheduledTime: `${date}T${time}:00`,
+                    duration: parseInt(duration)
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('İçerik başarıyla zamanlandı', 'success');
+                document.getElementById('quickScheduleForm').reset();
+                this.loadScheduledContent();
+            } else {
+                this.showNotification('İçerik zamanlanamadı: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    async sendEmergencyContent() {
+        const emergencyText = document.getElementById('emergencyText').value.trim();
+        const priority = document.getElementById('emergencyPriority').value;
+
+        if (!emergencyText) {
+            this.showNotification('Lütfen acil durum mesajını girin', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/emergency', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: emergencyText,
+                    priority: priority
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('Acil durum mesajı gönderildi', 'success');
+                document.getElementById('emergencyForm').reset();
+            } else {
+                this.showNotification('Acil durum mesajı gönderilemedi: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    updateScheduledContentUI() {
+        const scheduledList = document.getElementById('scheduledList');
+        if (!scheduledList) return;
+
+        if (this.scheduledContent.length === 0) {
+            scheduledList.innerHTML = '<div class="no-data">Zamanlanmış içerik yok</div>';
+            return;
+        }
+
+        scheduledList.innerHTML = this.scheduledContent.map(item => `
+            <div class="scheduled-item">
+                <div class="scheduled-info">
+                    <h4>${item.type === 'text' ? 'Metin' : 'Resim'}</h4>
+                    <p>${item.content.length > 50 ? item.content.substring(0, 50) + '...' : item.content}</p>
+                    <small>Zaman: ${new Date(item.scheduledTime).toLocaleString('tr-TR')}</small>
                 </div>
-                <div style="color: #28a745;">
-                    <i class="fas fa-circle" style="font-size: 0.8em;"></i>
+                <div class="scheduled-actions">
+                    <button onclick="admin.deleteScheduledContent('${item.id}')" class="btn btn-danger">Sil</button>
                 </div>
             </div>
         `).join('');
     }
 
-    updateConnectionStatus(connected) {
-        const status = document.getElementById('connectionStatus');
-        
-        if (connected) {
-            status.className = 'status-indicator status-connected';
-            status.innerHTML = '<i class="fas fa-circle"></i><span>Sunucuya bağlı</span>';
-        } else {
-            status.className = 'status-indicator status-disconnected';
-            status.innerHTML = '<i class="fas fa-circle"></i><span>Sunucu bağlantısı yok</span>';
+    updateTemplatesUI() {
+        const templatesList = document.getElementById('templatesList');
+        if (!templatesList) return;
+
+        if (this.templates.length === 0) {
+            templatesList.innerHTML = '<div class="no-data">Şablon yok</div>';
+            return;
+        }
+
+        templatesList.innerHTML = this.templates.map(template => `
+            <div class="template-item">
+                <div class="template-info">
+                    <h4>${template.name}</h4>
+                    <p>${template.description || 'Açıklama yok'}</p>
+                </div>
+                <div class="template-actions">
+                    <button onclick="admin.useTemplate('${template.id}')" class="btn btn-primary">Kullan</button>
+                    <button onclick="admin.deleteTemplate('${template.id}')" class="btn btn-danger">Sil</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    updateSettingsUI() {
+        if (this.settings.brightness !== undefined) {
+            document.getElementById('brightness').value = this.settings.brightness;
+            document.getElementById('brightnessValue').textContent = this.settings.brightness + '%';
+        }
+        if (this.settings.volume !== undefined) {
+            document.getElementById('volume').value = this.settings.volume;
+            document.getElementById('volumeValue').textContent = this.settings.volume + '%';
+        }
+        if (this.settings.autoRefresh !== undefined) {
+            document.getElementById('autoRefresh').checked = this.settings.autoRefresh;
+        }
+        if (this.settings.displayTimeout !== undefined) {
+            document.getElementById('displayTimeout').value = this.settings.displayTimeout;
         }
     }
 
-    showUploadProgress(show) {
-        const progress = document.querySelector('.upload-progress');
-        const progressBar = document.querySelector('.upload-progress-bar');
-        
-        if (show) {
-            progress.style.display = 'block';
-            progressBar.style.width = '0%';
-            
-            // Simulate upload progress
-            let width = 0;
-            const interval = setInterval(() => {
-                width += Math.random() * 30;
-                if (width >= 100) {
-                    width = 100;
-                    clearInterval(interval);
-                }
-                progressBar.style.width = width + '%';
-            }, 200);
-        } else {
-            setTimeout(() => {
-                progress.style.display = 'none';
-                progressBar.style.width = '0%';
-            }, 500);
+    updateStatisticsUI() {
+        const stats = this.statistics;
+        if (!stats) return;
+
+        const elements = {
+            totalDevices: document.getElementById('totalDevices'),
+            activeDevices: document.getElementById('activeDevices'),
+            totalContent: document.getElementById('totalContent'),
+            scheduledContent: document.getElementById('scheduledContentCount'),
+            uptime: document.getElementById('uptime'),
+            lastUpdate: document.getElementById('lastStatsUpdate')
+        };
+
+        if (elements.totalDevices) elements.totalDevices.textContent = stats.totalDevices || 0;
+        if (elements.activeDevices) elements.activeDevices.textContent = stats.activeDevices || 0;
+        if (elements.totalContent) elements.totalContent.textContent = stats.totalContent || 0;
+        if (elements.scheduledContent) elements.scheduledContent.textContent = stats.scheduledContent || 0;
+        if (elements.uptime) elements.uptime.textContent = stats.uptime || 'Bilinmiyor';
+        if (elements.lastUpdate) elements.lastUpdate.textContent = new Date().toLocaleString('tr-TR');
+    }
+
+    updateLiveStats() {
+        if (this.currentTab === 'statistics') {
+            this.loadStatistics();
         }
     }
 
-    showNotification(message, type = 'success') {
-        const notification = document.getElementById('notification');
-        notification.textContent = message;
+    showEmergencyBanner(emergency) {
+        const banner = document.getElementById('emergencyBanner');
+        if (banner) {
+            banner.innerHTML = `
+                <div class="emergency-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>${emergency.text}</span>
+                    <button onclick="admin.clearEmergency()" class="btn btn-sm">Temizle</button>
+                </div>
+            `;
+            banner.style.display = 'block';
+        }
+    }
+
+    hideEmergencyBanner() {
+        const banner = document.getElementById('emergencyBanner');
+        if (banner) {
+            banner.style.display = 'none';
+        }
+    }
+
+    async clearEmergency() {
+        try {
+            const response = await fetch('/api/emergency', {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.hideEmergencyBanner();
+                this.showNotification('Acil durum temizlendi', 'success');
+            } else {
+                this.showNotification('Acil durum temizlenemedi: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    async deleteScheduledContent(id) {
+        if (!confirm('Bu zamanlanmış içeriği silmek istediğinizden emin misiniz?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/scheduled/${id}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('Zamanlanmış içerik silindi', 'success');
+                this.loadScheduledContent();
+            } else {
+                this.showNotification('Zamanlanmış içerik silinemedi: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    async useTemplate(id) {
+        try {
+            const response = await fetch(`/api/templates/${id}/use`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('Şablon kullanıldı', 'success');
+                this.updateContentPreview(result.content);
+            } else {
+                this.showNotification('Şablon kullanılamadı: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    async deleteTemplate(id) {
+        if (!confirm('Bu şablonu silmek istediğinizden emin misiniz?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/templates/${id}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('Şablon silindi', 'success');
+                this.loadTemplates();
+            } else {
+                this.showNotification('Şablon silinemedi: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    async saveSettings() {
+        const settings = {
+            brightness: parseInt(document.getElementById('brightness').value),
+            volume: parseInt(document.getElementById('volume').value),
+            autoRefresh: document.getElementById('autoRefresh').checked,
+            displayTimeout: parseInt(document.getElementById('displayTimeout').value)
+        };
+
+        try {
+            const response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(settings)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('Ayarlar kaydedildi', 'success');
+                this.settings = settings;
+            } else {
+                this.showNotification('Ayarlar kaydedilemedi: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    async restartDevice(deviceId) {
+        if (!confirm('Bu cihazı yeniden başlatmak istediğinizden emin misiniz?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/devices/${deviceId}/restart`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('Cihaz yeniden başlatılıyor...', 'success');
+            } else {
+                this.showNotification('Cihaz yeniden başlatılamadı: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    async updateDevice(deviceId) {
+        try {
+            const response = await fetch(`/api/devices/${deviceId}/update`, {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showNotification('Cihaz güncellemesi başlatıldı', 'success');
+            } else {
+                this.showNotification('Cihaz güncellenemedi: ' + result.error, 'error');
+            }
+        } catch (error) {
+            this.showNotification('Bir hata oluştu: ' + error.message, 'error');
+        }
+    }
+
+    updateLiveStats() {
+        if (this.currentTab === 'statistics') {
+            this.loadStatistics();
+        }
+    }
+
+    updateDevicesList(devices) {
+        this.devices = new Map(devices.map(device => [device.id, device]));
+        
+        const devicesList = document.getElementById('devicesList');
+        if (!devicesList) return;
+
+        if (devices.length === 0) {
+            devicesList.innerHTML = '<div class="no-data">Aktif cihaz yok</div>';
+            return;
+        }
+
+        devicesList.innerHTML = devices.map(device => `
+            <div class="device-item ${device.status === 'online' ? 'online' : 'offline'}">
+                <div class="device-info">
+                    <h4>${device.name || device.id}</h4>
+                    <p>IP: ${device.ip}</p>
+                    <small>Son görülme: ${new Date(device.lastSeen).toLocaleString('tr-TR')}</small>
+                    <span class="device-status ${device.status}">${device.status === 'online' ? 'Çevrimiçi' : 'Çevrimdışı'}</span>
+                </div>
+                <div class="device-actions">
+                    <button onclick="admin.restartDevice('${device.id}')" class="btn btn-warning" ${device.status === 'offline' ? 'disabled' : ''}>
+                        Yeniden Başlat
+                    </button>
+                    <button onclick="admin.updateDevice('${device.id}')" class="btn btn-info" ${device.status === 'offline' ? 'disabled' : ''}>
+                        Güncelle
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    updateContentPreview(content) {
+        const preview = document.getElementById('contentPreview');
+        if (!preview) return;
+
+        if (!content) {
+            preview.innerHTML = '<div class="no-content">İçerik bulunamadı</div>';
+            return;
+        }
+
+        switch (content.type) {
+            case 'text':
+                preview.innerHTML = `
+                    <div class="content-display text-content">
+                        <h3>Aktif Metin İçeriği</h3>
+                        <p>${content.text}</p>
+                        <small>Gönderilme zamanı: ${new Date(content.timestamp).toLocaleString('tr-TR')}</small>
+                    </div>
+                `;
+                break;
+            case 'image':
+                preview.innerHTML = `
+                    <div class="content-display image-content">
+                        <h3>Aktif Resim İçeriği</h3>
+                        <img src="${content.url}" alt="Aktif İçerik" style="max-width: 100%; height: auto; border-radius: 8px;">
+                        <small>Gönderilme zamanı: ${new Date(content.timestamp).toLocaleString('tr-TR')}</small>
+                    </div>
+                `;
+                break;
+            default:
+                preview.innerHTML = '<div class="no-content">Bilinmeyen içerik türü</div>';
+        }
+    }
+
+    updateConnectionStatus(isConnected) {
+        const statusElement = document.getElementById('connectionStatus');
+        if (statusElement) {
+            statusElement.className = `connection-status ${isConnected ? 'connected' : 'disconnected'}`;
+            statusElement.innerHTML = `
+                <i class="fas ${isConnected ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                ${isConnected ? 'Bağlı' : 'Bağlantı Yok'}
+            `;
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
         notification.className = `notification ${type}`;
-        notification.classList.add('show');
+        notification.innerHTML = `
+            <i class="fas ${this.getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+        `;
 
+        document.body.appendChild(notification);
+
+        // Show notification
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+
+        // Hide notification after 3 seconds
         setTimeout(() => {
             notification.classList.remove('show');
-        }, 4000);
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    getNotificationIcon(type) {
+        switch (type) {
+            case 'success': return 'fa-check-circle';
+            case 'error': return 'fa-times-circle';
+            case 'warning': return 'fa-exclamation-triangle';
+            default: return 'fa-info-circle';
+        }
     }
 
     formatFileSize(bytes) {
@@ -322,25 +862,28 @@ class DigitalSignageAdmin {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    formatUptime(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        if (days > 0) {
+            return `${days}g ${hours}s ${minutes}d`;
+        } else if (hours > 0) {
+            return `${hours}s ${minutes}d`;
+        } else {
+            return `${minutes}d`;
+        }
     }
 }
 
+// Global admin instance
+let admin = null;
+
 // Initialize the admin panel when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new DigitalSignageAdmin();
+    admin = new DigitalSignageAdmin();
     
-    // Refresh devices list every 30 seconds
-    setInterval(async () => {
-        try {
-            const response = await fetch('/api/devices');
-            const devices = await response.json();
-            new DigitalSignageAdmin().updateDevicesList(devices);
-        } catch (error) {
-            console.error('Cihaz listesi güncellenemedi:', error);
-        }
-    }, 30000);
+    // Global device refresh is handled in setupAutoRefresh method
+    console.log('🚀 Digital Signage Admin Panel başlatıldı');
 });
