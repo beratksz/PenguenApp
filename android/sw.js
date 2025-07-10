@@ -7,8 +7,8 @@ const DYNAMIC_CACHE = 'dynamic-cache-v1';
 const urlsToCache = [
   '/android/display.html',
   '/client/script.js',
-  '/socket.io/socket.io.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js'
+  '/client/lib/fontawesome/all.min.css',
+  '/socket.io/socket.io.js'
 ];
 
 // Network-first strategy URLs

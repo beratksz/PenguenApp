@@ -1,0 +1,19 @@
+/* 
+ * Font Awesome - Minimal Font Files
+ * This is a placeholder for font files that would normally be downloaded
+ * For production, you would need to download the actual font files from Font Awesome
+ */
+
+/* Font files would be placed here:
+ * - fa-solid-900.woff2
+ * - fa-solid-900.woff
+ * - fa-regular-400.woff2
+ * - fa-regular-400.woff
+ */
+
+/* Alternative: Use system fonts as fallback */
+.fa, .fas, .far, .fal, .fab {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: normal;
+  font-style: normal;
+}

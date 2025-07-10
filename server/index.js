@@ -40,19 +40,14 @@ if (isDevelopment) {
         scriptSrc: [
           "'self'", 
           "'unsafe-inline'", 
-          "https://cdnjs.cloudflare.com",
           "https://cdn.socket.io"
         ],
         styleSrc: [
           "'self'", 
-          "'unsafe-inline'", 
-          "https://cdnjs.cloudflare.com",
-          "https://fonts.googleapis.com"
+          "'unsafe-inline'"
         ],
         fontSrc: [
           "'self'",
-          "https://cdnjs.cloudflare.com",
-          "https://fonts.gstatic.com",
           "data:"
         ],
         imgSrc: [
